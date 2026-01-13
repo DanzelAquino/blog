@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '../store';
 import { signUp, clearError } from '../store/slices/authSlice';
 import { registerSchema, RegisterFormData } from '../utils/validationSchema';
 import FormInput from '../components/FormInput';
-import FormErrorMessage from '../components/FormError';
+import FormErrorMessage from '../components/FormErrorMessage';
 
 interface RegisterFormProps {
   email: string;

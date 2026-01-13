@@ -14,7 +14,6 @@ const initialState: AuthState = {
   error: null,
 };
 
-// Helper function to convert Supabase user to our AuthUser type
 const convertToAuthUser = (supabaseUser: SupabaseUser | null): AuthUser | null => {
   if (!supabaseUser || !supabaseUser.id) {
     return null;
@@ -87,7 +86,6 @@ const authSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Sign Up
     builder.addCase(signUp.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -101,7 +99,6 @@ const authSlice = createSlice({
       state.error = action.error.message || 'Sign up failed';
     });
 
-    // Sign In
     builder.addCase(signIn.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -115,7 +112,6 @@ const authSlice = createSlice({
       state.error = action.error.message || 'Sign in failed';
     });
 
-    // Sign Out
     builder.addCase(signOut.pending, (state) => {
       state.loading = true;
     });

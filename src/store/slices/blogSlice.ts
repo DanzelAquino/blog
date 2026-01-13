@@ -20,20 +20,18 @@ const initialState: BlogState = {
   error: null,
   totalCount: 0,
   page: 1,
-  pageSize: 10,
+  pageSize: 9,
   totalPages: 0,
 };
 
-// Fetch blogs with pagination
 export const fetchBlogs = createAsyncThunk(
   'blogs/fetchBlogs',
   async (page: number, { rejectWithValue, signal }) => {
     try {
-      const pageSize = 10;
+      const pageSize = 9;
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
-      // Check if request was aborted
       if (signal.aborted) {
         throw new DOMException('Aborted', 'AbortError');
       }
@@ -54,21 +52,18 @@ export const fetchBlogs = createAsyncThunk(
         totalPages: Math.ceil((count || 0) / pageSize),
       };
     } catch (error: any) {
-      // Don't reject if the error is an abort error
       if (error.name === 'AbortError') {
-        return rejectWithValue(null); // Return null to indicate aborted
+        return rejectWithValue(null);
       }
       return rejectWithValue(error.message || 'Failed to fetch blogs');
     }
   }
 );
 
-// Create blog
 export const createBlog = createAsyncThunk(
   'blogs/createBlog',
   async (blogData: CreateBlogData, { rejectWithValue, signal }) => {
     try {
-      // Check if request was aborted
       if (signal.aborted) {
         throw new DOMException('Aborted', 'AbortError');
       }
@@ -100,12 +95,10 @@ export const createBlog = createAsyncThunk(
   }
 );
 
-// Update blog
 export const updateBlog = createAsyncThunk(
   'blogs/updateBlog',
   async ({ id, title, content }: UpdateBlogData, { rejectWithValue, signal }) => {
     try {
-      // Check if request was aborted
       if (signal.aborted) {
         throw new DOMException('Aborted', 'AbortError');
       }
@@ -139,12 +132,10 @@ export const updateBlog = createAsyncThunk(
   }
 );
 
-// Delete blog
 export const deleteBlog = createAsyncThunk(
   'blogs/deleteBlog',
   async (id: string, { rejectWithValue, signal }) => {
     try {
-      // Check if request was aborted
       if (signal.aborted) {
         throw new DOMException('Aborted', 'AbortError');
       }
@@ -172,12 +163,10 @@ export const deleteBlog = createAsyncThunk(
   }
 );
 
-// Fetch single blog
 export const fetchBlogById = createAsyncThunk(
   'blogs/fetchBlogById',
   async (id: string, { rejectWithValue, signal }) => {
     try {
-      // Check if request was aborted
       if (signal.aborted) {
         throw new DOMException('Aborted', 'AbortError');
       }
@@ -226,13 +215,11 @@ const blogSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // Fetch blogs
     builder.addCase(fetchBlogs.pending, (state) => {
       state.loading = true;
       state.error = null;
     });
     builder.addCase(fetchBlogs.fulfilled, (state, action) => {
-      // Only update state if we have actual data (not aborted)
       if (action.payload) {
         state.loading = false;
         state.blogs = action.payload.blogs;
@@ -242,7 +229,6 @@ const blogSlice = createSlice({
       }
     });
     builder.addCase(fetchBlogs.rejected, (state, action) => {
-      // Only update error if it's not an abort error
       if (action.payload !== null) {
         state.loading = false;
         state.error = action.payload as string;
@@ -251,13 +237,11 @@ const blogSlice = createSlice({
       }
     });
 
-    // Create blog
     builder.addCase(createBlog.pending, (state) => {
       state.loading = true;
       state.error = null;
     });
     builder.addCase(createBlog.fulfilled, (state, action) => {
-      // Only update state if we have actual data (not aborted)
       if (action.payload) {
         state.loading = false;
         state.blogs.unshift(action.payload);
@@ -266,7 +250,6 @@ const blogSlice = createSlice({
       }
     });
     builder.addCase(createBlog.rejected, (state, action) => {
-      // Only update error if it's not an abort error
       if (action.payload !== null) {
         state.loading = false;
         state.error = action.payload as string;
@@ -275,13 +258,11 @@ const blogSlice = createSlice({
       }
     });
 
-    // Update blog
     builder.addCase(updateBlog.pending, (state) => {
       state.loading = true;
       state.error = null;
     });
     builder.addCase(updateBlog.fulfilled, (state, action) => {
-      // Only update state if we have actual data (not aborted)
       if (action.payload) {
         state.loading = false;
         const index = state.blogs.findIndex(blog => blog.id === action.payload?.id);
@@ -292,7 +273,6 @@ const blogSlice = createSlice({
       }
     });
     builder.addCase(updateBlog.rejected, (state, action) => {
-      // Only update error if it's not an abort error
       if (action.payload !== null) {
         state.loading = false;
         state.error = action.payload as string;
@@ -301,13 +281,11 @@ const blogSlice = createSlice({
       }
     });
 
-    // Delete blog
     builder.addCase(deleteBlog.pending, (state) => {
       state.loading = true;
       state.error = null;
     });
     builder.addCase(deleteBlog.fulfilled, (state, action) => {
-      // Only update state if we have actual data (not aborted)
       if (action.payload) {
         state.loading = false;
         state.blogs = state.blogs.filter(blog => blog.id !== action.payload);
@@ -316,7 +294,6 @@ const blogSlice = createSlice({
       }
     });
     builder.addCase(deleteBlog.rejected, (state, action) => {
-      // Only update error if it's not an abort error
       if (action.payload !== null) {
         state.loading = false;
         state.error = action.payload as string;
@@ -325,20 +302,17 @@ const blogSlice = createSlice({
       }
     });
 
-    // Fetch blog by ID
     builder.addCase(fetchBlogById.pending, (state) => {
       state.loading = true;
       state.error = null;
     });
     builder.addCase(fetchBlogById.fulfilled, (state, action) => {
-      // Only update state if we have actual data (not aborted)
       if (action.payload) {
         state.loading = false;
         state.currentBlog = action.payload;
       }
     });
     builder.addCase(fetchBlogById.rejected, (state, action) => {
-      // Only update error if it's not an abort error
       if (action.payload !== null) {
         state.loading = false;
         state.error = action.payload as string;

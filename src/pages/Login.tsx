@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '../store';
 import { signIn, clearError } from '../store/slices/authSlice';
 import { loginSchema, LoginFormData } from '../utils/validationSchema';
 import FormInput from '../components/FormInput';
-import FormErrorMessage from '../components/FormError';
+import FormErrorMessage from '../components/FormErrorMessage';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();

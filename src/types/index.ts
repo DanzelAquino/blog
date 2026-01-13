@@ -62,10 +62,6 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
-export interface ProtectedRouteProps {
-  children: React.ReactNode;
-}
-
 export interface BlogCardProps {
   blog: Blog;
   onEdit?: (blog: Blog) => void;

@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useBlog } from '../hooks/useBlog';
 import { useAuth } from '../hooks/useAuth';
 import BlogCard from '../components/BlogCard';
-import FormErrorMessage from '../components/FormError';
+import FormErrorMessage from '../components/FormErrorMessage';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Blog } from '../types';
 

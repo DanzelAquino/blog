@@ -1,6 +1,5 @@
 import * as yup from 'yup';
 
-// Login validation
 export const loginSchema = yup.object({
   email: yup
     .string()
@@ -14,7 +13,6 @@ export const loginSchema = yup.object({
     .max(50, 'Password must not exceed 50 characters'),
 });
 
-// Registration validation
 export const registerSchema = yup.object({
   email: yup
     .string()
@@ -36,7 +34,6 @@ export const registerSchema = yup.object({
     .oneOf([yup.ref('password')], 'Passwords do not match'),
 });
 
-// Blog validation
 export const blogSchema = yup.object({
   title: yup
     .string()
@@ -51,7 +48,6 @@ export const blogSchema = yup.object({
     .max(5000, 'Content must not exceed 5000 characters'),
 });
 
-// Types for form data
 export type LoginFormData = yup.InferType<typeof loginSchema>;
 export type RegisterFormData = yup.InferType<typeof registerSchema>;
 export type BlogFormData = yup.InferType<typeof blogSchema>;

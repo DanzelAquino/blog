@@ -4,7 +4,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { blogSchema, BlogFormData } from '../utils/validationSchema';
 import FormInput from './FormInput';
 import FormTextarea from './FormTextarea';
-import FormErrorMessage from './FormError';
+import FormErrorMessage from './FormErrorMessage';
 import LoadingSpinner from './LoadingSpinner';
 
 interface BlogFormProps {

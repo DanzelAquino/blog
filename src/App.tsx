@@ -11,7 +11,8 @@ import Register from './pages/Register';
 import CreateBlog from './pages/CreateBlog';
 import EditBlog from './pages/EditBlog';
 import BlogList from './pages/BlogList';
-import BlogDetail from './pages/BlogDetail';
+import BlogDetailPage from './pages/BlogDetail';
+import Logout from './pages/Logout';
 
 const App: React.FC = () => {
   return (
@@ -26,7 +27,8 @@ const App: React.FC = () => {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/blogs" element={<BlogList />} />
-                <Route path="/blogs/:id" element={<BlogDetail />} />
+                <Route path="/blogs/:id" element={<BlogDetailPage />} />
+                <Route path="/logout" element={<Logout />} />
                 <Route
                   path="/create"
                   element={
