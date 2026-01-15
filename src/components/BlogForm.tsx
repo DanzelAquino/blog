@@ -46,7 +46,6 @@ const BlogForm: React.FC<BlogFormProps> = ({
     },
   });
 
-  // Watch for existingImageUrl changes
   const existingImageUrl = watch("existingImageUrl");
 
   const validateImage = (file: File | null): string => {
@@ -68,11 +67,9 @@ const BlogForm: React.FC<BlogFormProps> = ({
     const error = validateImage(file);
     setImageError(error);
 
-    // If user selects a new image, cancel the removeImage flag
     if (file) {
       setValue("removeImage", false);
       setImageRemoved(false);
-      // Clear existingImageUrl when uploading new image
       if (existingImageUrl) {
         setValue("existingImageUrl", "");
       }
@@ -179,7 +176,6 @@ const BlogForm: React.FC<BlogFormProps> = ({
         disabled={loading}
       />
 
-      {/* Add hidden inputs for form data */}
       <input type="hidden" {...register("removeImage")} />
       <input type="hidden" {...register("existingImageUrl")} />
 
