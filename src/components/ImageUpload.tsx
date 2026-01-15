@@ -59,12 +59,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
   const handleRemoveImage = () => {
     if (existingImageUrl && onRemoveExisting) {
-      // Mark image for removal and clear preview immediately
       console.log("ImageUpload: Setting removeImage flag and clearing preview");
       onRemoveExisting();
-      setPreviewUrl(null); // Clear preview immediately
+      setPreviewUrl(null);
     } else {
-      // Remove new image that hasn't been uploaded yet
       handleFileChange(null);
     }
   };

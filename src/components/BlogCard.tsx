@@ -30,7 +30,6 @@ const BlogCard: React.FC<BlogCardProps> = ({
     }
   };
 
-  // Truncate content for preview
   const truncateContent = (content: string, maxLength: number = 150) => {
     if (content.length <= maxLength) return content;
     return content.substring(0, maxLength).trim() + '...';

@@ -18,7 +18,6 @@ const BlogDetailPage: React.FC = () => {
   } = useBlog();
   const [isLoading, setIsLoading] = useState(true);
 
-  // Wrap loadBlog in useCallback to prevent infinite re-renders
   const loadBlog = useCallback(async () => {
     if (!id) return;
     
@@ -30,7 +29,7 @@ const BlogDetailPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [id, getBlogById]); // Add dependencies
+  }, [id, getBlogById]); 
 
   useEffect(() => {
     if (id) {

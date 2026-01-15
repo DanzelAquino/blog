@@ -63,14 +63,13 @@ const EditBlog: React.FC = () => {
       id,
       title: data.title,
       hasImage: !!data.image,
-      existingImageUrl: data.existingImageUrl, // This should be the original URL
+      existingImageUrl: data.existingImageUrl, 
       removeImage: data.removeImage,
     });
 
     if (!id) return;
 
     try {
-      // Pass the original existingImageUrl from initialData, not from form data
       const imageToPass = data.removeImage ? null : data.image;
 
       const result = await editBlog({
@@ -78,7 +77,7 @@ const EditBlog: React.FC = () => {
         title: data.title,
         content: data.content,
         image: imageToPass,
-        existingImageUrl: initialData.existingImageUrl, // Use original URL from initialData
+        existingImageUrl: initialData.existingImageUrl, 
         removeImage: data.removeImage,
       });
 

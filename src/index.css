@@ -1,6 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* Base Reset & Global Styles */
 * {
   margin: 0;
   padding: 0;
@@ -37,7 +36,6 @@ select:focus {
   border-radius: 2px;
 }
 
-/* Utility Classes */
 .page-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -84,7 +82,6 @@ select:focus {
   font-size: 14px;
 }
 
-/* Button Styles */
 .btn {
   padding: 8px 16px;
   border-radius: 6px;
@@ -156,7 +153,6 @@ select:focus {
   display: inline;
 }
 
-/* Form Styles */
 .form-input {
   width: 100%;
   padding: 8px 12px;
@@ -206,7 +202,6 @@ select:focus {
   pointer-events: none;
 }
 
-/* Card Styles */
 .card {
   background: white;
   border-radius: 8px;
@@ -220,7 +215,6 @@ select:focus {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Error Messages */
 .error-message {
   background-color: #fef2f2;
   border: 1px solid #fecaca;
@@ -302,7 +296,6 @@ select:focus {
   border-radius: 6px;
 }
 
-/* Blog Card Styles */
 .blog-card {
   background: white;
   border-radius: 12px;
@@ -433,7 +426,6 @@ select:focus {
   text-decoration: underline;
 }
 
-/* Blog Image Styles */
 .blog-card-image {
   width: 100%;
   height: 200px;
@@ -485,7 +477,6 @@ select:focus {
   max-height: 300px;
 }
 
-/* Image Upload Styles */
 .image-upload-container {
   margin-bottom: 24px;
 }
@@ -584,7 +575,6 @@ select:focus {
   transform: translateY(0);
 }
 
-/* Blog Detail Styles */
 .blog-detail-container {
   max-width: 800px;
   margin: 0 auto;
@@ -658,7 +648,6 @@ select:focus {
   padding: 8px 16px;
 }
 
-/* Blog Grid & List Styles */
 .blog-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -682,7 +671,6 @@ select:focus {
   margin-right: 8px;
 }
 
-/* Pagination */
 .pagination {
   display: flex;
   flex-direction: column;
@@ -757,13 +745,11 @@ select:focus {
   border-color: #e5e7eb;
 }
 
-/* Pagination number buttons specific styling */
 .pagination-controls .page-button:not(:first-child):not(:last-child) {
   min-width: 36px;
   padding: 8px 12px;
 }
 
-/* Responsive pagination */
 @media (max-width: 640px) {
   .pagination-controls {
     flex-wrap: wrap;
@@ -783,7 +769,6 @@ select:focus {
   }
 }
 
-/* Logout Page */
 .logout-page {
   min-height: calc(100vh - 80px);
   display: flex;
@@ -840,7 +825,6 @@ select:focus {
   font-style: italic;
 }
 
-/* Skeleton Loading */
 .blog-card-skeleton {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
@@ -876,12 +860,10 @@ select:focus {
   margin-top: auto;
 }
 
-/* Blog card without images */
 .blog-card:not(:has(.blog-card-image)) .blog-card-content-wrapper {
   padding-top: 32px;
 }
 
-/* Smooth animation for delete button */
 .deleting-text {
   display: inline-flex;
   align-items: center;
@@ -898,13 +880,11 @@ select:focus {
   animation: spin 1s linear infinite;
 }
 
-/* Blog card loading state */
 .blog-card.loading {
   opacity: 0.7;
   pointer-events: none;
 }
 
-/* Optional: Image placeholder for cards without images */
 .blog-card:not(:has(.blog-card-image)) .blog-card-image-placeholder {
   height: 150px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -916,7 +896,6 @@ select:focus {
   opacity: 0.8;
 }
 
-/* Optional: Tags/categories */
 .blog-card-tags {
   display: flex;
   flex-wrap: wrap;
@@ -932,7 +911,6 @@ select:focus {
   font-size: 12px;
 }
 
-/* Animations */
 @keyframes spin {
   0% {
     transform: rotate(0deg);
@@ -969,7 +947,6 @@ select:focus {
   }
 }
 
-/* Responsive Design */
 @media (max-width: 640px) {
 
   .blog-card-header,
@@ -1006,7 +983,6 @@ select:focus {
   }
 }
 
-/* For very long titles */
 .blog-card-title,
 .blog-detail-title {
   display: -webkit-box;
@@ -1015,13 +991,11 @@ select:focus {
   text-overflow: ellipsis;
 }
 
-/* Add to CSS - Image Removal Marking Styles */
 .image-upload-area.marked-for-removal {
   border-color: #dc2626 !important;
   background-color: #fef2f2 !important;
 }
 
-/* Removal overlay animation */
 @keyframes pulse {
   0% {
     opacity: 0.7;
@@ -1038,7 +1012,6 @@ select:focus {
   animation: pulse 2s infinite;
 }
 
-/* Button hover effects for marked state */
 .remove-button:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);

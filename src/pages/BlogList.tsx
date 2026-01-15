@@ -4,7 +4,7 @@ import { useBlog } from '../hooks/useBlog';
 import { useAuth } from '../hooks/useAuth';
 import BlogCard from '../components/BlogCard';
 import FormErrorMessage from '../components/FormErrorMessage';
-import { Blog } from '../types'; // Removed unused LoadingSpinner import
+import { Blog } from '../types';
 
 const BlogList: React.FC = () => {
   const navigate = useNavigate();
@@ -12,16 +12,13 @@ const BlogList: React.FC = () => {
     blogs,
     loading,
     error,
-    // Removed unused 'page' variable
     totalPages,
     getBlogs,
-    // Removed unused 'changePage' function
     clearBlogError,
     removeBlog,
   } = useBlog();
   
   const { isAuthenticated, userId } = useAuth();
-  // Removed unused 'deleteLoading' state
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -249,7 +246,7 @@ const BlogList: React.FC = () => {
                 showActions={userId === blog.user_id}
                 onEdit={() => handleEdit(blog.id)}
                 onDelete={() => handleDelete(blog.id, blog.title)}
-                deleteLoading={false} // Since we removed deleteLoading state
+                deleteLoading={false}
               />
             ))}
           </div>
