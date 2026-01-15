@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react'; // Added useCallback
 import { useParams, useNavigate } from 'react-router-dom';
 import { useBlog } from '../hooks/useBlog';
 import BlogDetail from '../components/BlogDetail';
@@ -18,6 +18,20 @@ const BlogDetailPage: React.FC = () => {
   } = useBlog();
   const [isLoading, setIsLoading] = useState(true);
 
+  // Wrap loadBlog in useCallback to prevent infinite re-renders
+  const loadBlog = useCallback(async () => {
+    if (!id) return;
+    
+    setIsLoading(true);
+    try {
+      await getBlogById(id);
+    } catch (err) {
+      console.error('Failed to load blog:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [id, getBlogById]); // Add dependencies
+
   useEffect(() => {
     if (id) {
       loadBlog();
@@ -26,18 +40,7 @@ const BlogDetailPage: React.FC = () => {
     return () => {
       clearBlog();
     };
-  }, [id]);
-
-  const loadBlog = async () => {
-    setIsLoading(true);
-    try {
-      await getBlogById(id!);
-    } catch (err) {
-      console.error('Failed to load blog:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [id, loadBlog, clearBlog]); 
 
   const handleDelete = async (blogId: string) => {
     try {
@@ -48,18 +51,11 @@ const BlogDetailPage: React.FC = () => {
     }
   };
 
-  const handleRefresh = () => {
-    if (id) {
-      loadBlog();
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="page-container">
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Loading blog...</p>
         </div>
       </div>
     );

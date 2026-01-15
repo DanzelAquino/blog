@@ -7,12 +7,12 @@ import { signOut } from "../store/slices/authSlice";
 const Header: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
-  const { isAuthenticated, userEmail, loading } = useAuth();
+  const { isAuthenticated, userEmail } = useAuth();
 
   const handleLogout = async () => {
     try {
       await dispatch(signOut()).unwrap();
-      navigate("/");
+      navigate("/logout");
     } catch (err) {
       console.error("Logout failed:", err);
     }
@@ -59,19 +59,6 @@ const Header: React.FC = () => {
     },
   };
 
-  if (loading) {
-    return (
-      <header style={headerStyles.header}>
-        <div style={headerStyles.nav}>
-          <Link to="/" style={headerStyles.logo}>
-            Simple Blog
-          </Link>
-          <div>Loading...</div>
-        </div>
-      </header>
-    );
-  }
-
   return (
     <header style={headerStyles.header}>
       <nav style={headerStyles.nav}>
@@ -93,13 +80,13 @@ const Header: React.FC = () => {
                 Create
               </Link>
               <span style={headerStyles.emailText}>{userEmail}</span>
-              <Link
-                to="/logout"
+              <button
+                onClick={handleLogout}
                 className="btn btn-danger"
                 style={{ padding: "8px 16px" }}
               >
                 Logout
-              </Link>
+              </button>
             </>
           ) : (
             <div style={headerStyles.authButtons}>

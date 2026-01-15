@@ -18,7 +18,6 @@ const Logout: React.FC = () => {
           console.error('Logout failed:', err);
         }
       }
-      // Redirect to home after logout
       setTimeout(() => {
         navigate('/');
       }, 1500);

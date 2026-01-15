@@ -1,4 +1,4 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { Component, ErrorInfo, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -20,34 +20,32 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
+    console.error("Uncaught error:", error, errorInfo);
   }
 
   public render() {
     if (this.state.hasError) {
       return (
-        <div style={{
-          padding: '40px 20px',
-          textAlign: 'center',
-          maxWidth: '600px',
-          margin: '0 auto',
-        }}>
-          <h1 style={{ fontSize: '24px', marginBottom: '16px', color: '#dc2626' }}>
-            Something went wrong
-          </h1>
-          <p style={{ marginBottom: '24px', color: '#6b7280' }}>
-            {this.state.error?.message || 'An unexpected error occurred'}
-          </p>
-          <button
-            onClick={() => window.location.reload()}
-            className="btn btn-primary"
-          >
-            Reload Page
-          </button>
+        <div className="error-boundary">
+          <h1>Something went wrong</h1>
+          <p>{this.state.error?.message || "An unexpected error occurred"}</p>
+          <div className="error-actions">
+            <button
+              onClick={() => window.location.reload()}
+              className="btn btn-primary"
+            >
+              Reload Page
+            </button>
+            <button
+              onClick={() => (window.location.href = "/")}
+              className="btn btn-secondary"
+            >
+              Go to Home
+            </button>
+          </div>
         </div>
       );
     }
-
     return this.props.children;
   }
 }

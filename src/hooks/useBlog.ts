@@ -40,7 +40,6 @@ export const useBlog = () => {
       try {
         return await dispatch(fetchBlogById(id)).unwrap();
       } catch (error) {
-        // Don't throw if it's an abort error
         if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
           return null;
         }
@@ -60,7 +59,6 @@ export const useBlog = () => {
         }
         return result;
       } catch (error) {
-        // Don't throw if it's an abort error
         if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
           return null;
         }
@@ -80,10 +78,6 @@ export const useBlog = () => {
         }
         return result;
       } catch (error) {
-        // Don't throw if it's an abort error
-        if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
-          return null;
-        }
         console.error('Failed to update blog:', error);
         throw error;
       }
@@ -97,7 +91,6 @@ export const useBlog = () => {
         await dispatch(deleteBlog(id)).unwrap();
         return true;
       } catch (error) {
-        // Don't throw if it's an abort error
         if (error && typeof error === 'object' && 'name' in error && error.name === 'AbortError') {
           return false;
         }

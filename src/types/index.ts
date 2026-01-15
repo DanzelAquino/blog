@@ -27,6 +27,7 @@ export interface Blog {
   user_id: string;
   created_at: string;
   updated_at: string;
+  image_url?: string;
 }
 
 export interface BlogState {
@@ -42,16 +43,17 @@ export interface BlogState {
 export interface CreateBlogData {
   title: string;
   content: string;
+  image?: File;
+  existingImageUrl?: string;
 }
 
-export interface UpdateBlogData extends CreateBlogData {
+export interface UpdateBlogData {
   id: string;
-}
-
-export interface ApiResponse<T> {
-  data: T | null;
-  error: string | null;
-  loading: boolean;
+  title: string;
+  content: string;
+  image?: File | null;
+  existingImageUrl?: string;
+  removeImage?: boolean;
 }
 
 export interface PaginatedResponse<T> {
@@ -60,20 +62,6 @@ export interface PaginatedResponse<T> {
   page: number;
   pageSize: number;
   totalPages: number;
-}
-
-export interface BlogCardProps {
-  blog: Blog;
-  onEdit?: (blog: Blog) => void;
-  onDelete?: (id: string) => void;
-  showActions?: boolean;
-}
-
-export interface BlogFormProps {
-  initialData?: CreateBlogData;
-  onSubmit: (data: CreateBlogData) => Promise<void>;
-  loading?: boolean;
-  submitText?: string;
 }
 
 export interface SupabaseUser {
@@ -96,6 +84,9 @@ export interface RegisterFormData {
 export interface BlogFormData {
   title: string;
   content: string;
+  image?: File;
+  existingImageUrl?: string;
+  removeImage?: boolean;
 }
 
 export interface ValidationErrors {

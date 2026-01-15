@@ -43,134 +43,9 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
     }
   };
 
-  const styles = {
-    container: {
-      maxWidth: '800px',
-      margin: '0 auto',
-    },
-    loadingContainer: {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      minHeight: '400px',
-    },
-    errorContainer: {
-      textAlign: 'center' as 'center',
-      padding: '60px 20px',
-    },
-    errorText: {
-      color: '#dc2626',
-      marginBottom: '16px',
-      fontSize: '16px',
-    },
-    notFound: {
-      textAlign: 'center' as 'center',
-      padding: '60px 20px',
-      backgroundColor: 'white',
-      borderRadius: '12px',
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    },
-    notFoundTitle: {
-      fontSize: '24px',
-      fontWeight: '600',
-      marginBottom: '16px',
-      color: '#111827',
-    },
-    notFoundText: {
-      fontSize: '16px',
-      color: '#6b7280',
-      marginBottom: '24px',
-      lineHeight: '1.5',
-    },
-    notFoundLink: {
-      color: '#2563eb',
-      fontWeight: '500',
-      textDecoration: 'none',
-      display: 'inline-block',
-      padding: '8px 16px',
-      border: '1px solid #2563eb',
-      borderRadius: '6px',
-    },
-    article: {
-      backgroundColor: 'white',
-      borderRadius: '12px',
-      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-      overflow: 'hidden',
-    },
-    header: {
-      padding: '32px',
-      borderBottom: '1px solid #e5e7eb',
-    },
-    headerTop: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      marginBottom: '16px',
-    },
-    title: {
-      fontSize: '28px',
-      fontWeight: 'bold',
-      color: '#111827',
-      marginBottom: '12px',
-      lineHeight: '1.3',
-    },
-    dateInfo: {
-      fontSize: '14px',
-      color: '#6b7280',
-      display: 'flex',
-      alignItems: 'center',
-      flexWrap: 'wrap' as 'wrap',
-      gap: '8px',
-    },
-    updatedInfo: {
-      fontSize: '14px',
-      color: '#9ca3af',
-      fontStyle: 'italic',
-    },
-    actions: {
-      display: 'flex',
-      gap: '12px',
-      marginLeft: '16px',
-    },
-    content: {
-      padding: '32px',
-    },
-    contentText: {
-      color: '#4b5563',
-      lineHeight: '1.8',
-      fontSize: '16px',
-      whiteSpace: 'pre-wrap' as 'pre-wrap',
-    },
-    footer: {
-      padding: '24px 32px',
-      borderTop: '1px solid #e5e7eb',
-      backgroundColor: '#f9fafb',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    },
-    backLink: {
-      color: '#2563eb',
-      fontWeight: '500',
-      textDecoration: 'none',
-      display: 'flex',
-      alignItems: 'center',
-      fontSize: '14px',
-    },
-    backIcon: {
-      marginRight: '8px',
-      width: '16px',
-      height: '16px',
-    },
-    ownerInfo: {
-      fontSize: '14px',
-      color: '#6b7280',
-    },
-  };
-
   if (loading) {
     return (
-      <div style={styles.loadingContainer}>
+      <div className="blog-detail-loading-container">
         <LoadingSpinner size="large" />
       </div>
     );
@@ -178,9 +53,9 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
 
   if (error) {
     return (
-      <div style={styles.errorContainer}>
-        <div style={styles.errorText}>{error}</div>
-        <Link to="/blogs" style={styles.notFoundLink}>
+      <div className="blog-detail-error-container">
+        <div className="blog-detail-error-text">{error}</div>
+        <Link to="/blogs" className="blog-detail-not-found-link">
           Back to Blogs
         </Link>
       </div>
@@ -189,12 +64,12 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
 
   if (!blog) {
     return (
-      <div style={styles.notFound}>
-        <h2 style={styles.notFoundTitle}>Blog Not Found</h2>
-        <p style={styles.notFoundText}>
+      <div className="blog-detail-not-found">
+        <h2 className="blog-detail-not-found-title">Blog Not Found</h2>
+        <p className="blog-detail-not-found-text">
           The blog you're looking for doesn't exist or has been removed.
         </p>
-        <Link to="/blogs" style={styles.notFoundLink}>
+        <Link to="/blogs" className="blog-detail-not-found-link">
           Browse all blogs
         </Link>
       </div>
@@ -202,16 +77,16 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
   }
 
   return (
-    <div style={styles.container}>
-      <article style={styles.article}>
-        <div style={styles.header}>
-          <div style={styles.headerTop}>
+    <div className="blog-detail-container">
+      <article className="blog-detail-article">
+        <div className="blog-detail-header">
+          <div className="blog-detail-header-top">
             <div style={{ flex: 1 }}>
-              <h1 style={styles.title}>{blog.title}</h1>
-              <div style={styles.dateInfo}>
+              <h1 className="blog-detail-title">{blog.title}</h1>
+              <div className="blog-detail-date-info">
                 <span>Published on {formatDate(blog.created_at)}</span>
                 {blog.updated_at !== blog.created_at && (
-                  <span style={styles.updatedInfo}>
+                  <span className="blog-detail-updated-info">
                     Last updated on {formatDate(blog.updated_at)}
                   </span>
                 )}
@@ -219,18 +94,16 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
             </div>
             
             {isOwner && onDelete && (
-              <div style={styles.actions}>
+              <div className="blog-detail-actions">
                 <Link
                   to={`/edit/${blog.id}`}
-                  className="btn btn-primary"
-                  style={{ fontSize: '14px', padding: '8px 16px' }}
+                  className="btn btn-primary blog-detail-edit-btn"
                 >
                   Edit
                 </Link>
                 <button
                   onClick={handleDelete}
-                  className="btn btn-danger"
-                  style={{ fontSize: '14px', padding: '8px 16px' }}
+                  className="btn btn-danger blog-detail-delete-btn"
                   type="button"
                 >
                   Delete
@@ -240,24 +113,34 @@ const BlogDetail: React.FC<BlogDetailProps> = ({
           </div>
         </div>
 
-        <div style={styles.content}>
-          <div style={styles.contentText}>
+        {blog.image_url && (
+          <div className="blog-detail-image-container">
+            <img 
+              src={blog.image_url} 
+              alt={blog.title}
+              className="blog-detail-image"
+            />
+          </div>
+        )}
+
+        <div className="blog-detail-content">
+          <div className="blog-detail-content-text">
             {blog.content}
           </div>
         </div>
 
-        <div style={styles.footer}>
+        <div className="blog-detail-footer">
           <Link
             to="/blogs"
-            style={styles.backLink}
+            className="blog-detail-back-link"
           >
-            <svg style={styles.backIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="blog-detail-back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
             Back to Blogs
           </Link>
           
-          <div style={styles.ownerInfo}>
+          <div className="blog-detail-owner-info">
             {isOwner ? 'Your blog post' : 'Shared blog'}
           </div>
         </div>

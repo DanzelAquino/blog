@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { supabase } from '../../utils/supabase';
-import { Blog, CreateBlogData, UpdateBlogData } from '../../types';
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
+import { supabase } from "../../utils/supabase";
+import { Blog, CreateBlogData, UpdateBlogData } from "../../types";
 
 interface BlogState {
   blogs: Blog[];
@@ -25,7 +25,7 @@ const initialState: BlogState = {
 };
 
 export const fetchBlogs = createAsyncThunk(
-  'blogs/fetchBlogs',
+  "blogs/fetchBlogs",
   async (page: number, { rejectWithValue, signal }) => {
     try {
       const pageSize = 9;
@@ -33,13 +33,13 @@ export const fetchBlogs = createAsyncThunk(
       const to = from + pageSize - 1;
 
       if (signal.aborted) {
-        throw new DOMException('Aborted', 'AbortError');
+        throw new DOMException("Aborted", "AbortError");
       }
 
       const { data, error, count } = await supabase
-        .from('blogs')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false })
+        .from("blogs")
+        .select("*", { count: "exact" })
+        .order("created_at", { ascending: false })
         .range(from, to);
 
       if (error) throw error;
@@ -52,144 +52,259 @@ export const fetchBlogs = createAsyncThunk(
         totalPages: Math.ceil((count || 0) / pageSize),
       };
     } catch (error: any) {
-      if (error.name === 'AbortError') {
+      if (error.name === "AbortError") {
         return rejectWithValue(null);
       }
-      return rejectWithValue(error.message || 'Failed to fetch blogs');
+      return rejectWithValue(error.message || "Failed to fetch blogs");
     }
   }
 );
 
+const uploadImage = async (
+  file: File,
+  userId: string,
+  blogId: string
+): Promise<string> => {
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${userId}/${blogId}-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("blog-images")
+    .upload(fileName, file);
+
+  if (uploadError) throw uploadError;
+
+  const { data } = supabase.storage.from("blog-images").getPublicUrl(fileName);
+
+  return data.publicUrl;
+};
+
+const extractFilePathFromUrl = (imageUrl: string): string | null => {
+  if (!imageUrl) return null;
+
+  try {
+    const blogImagesIndex = imageUrl.indexOf("blog-images/");
+    if (blogImagesIndex !== -1) {
+      const result = imageUrl.substring(
+        blogImagesIndex + "blog-images/".length
+      );
+      return result;
+    }
+
+    console.warn("🔍 No blog-images/ found in URL");
+    return null;
+  } catch (error) {
+    console.error("🔍 URL parse error:", error);
+    return null;
+  }
+};
+
+const deleteImageFromStorage = async (imageUrl: string): Promise<void> => {
+  if (!imageUrl) {
+    console.log("No image URL provided for deletion");
+    return;
+  }
+
+  try {
+    const filePath = extractFilePathFromUrl(imageUrl);
+    if (!filePath) {
+      console.warn("Could not extract file path from URL");
+      return;
+    }
+
+    const { error } = await supabase.storage
+      .from("blog-images")
+      .remove([filePath]);
+
+    if (error) {
+      console.error("Failed to delete image from storage:", error.message);
+    }
+  } catch (error: any) {
+    console.error("Exception during image deletion:", error.message);
+  }
+};
+
 export const createBlog = createAsyncThunk(
-  'blogs/createBlog',
+  "blogs/createBlog",
   async (blogData: CreateBlogData, { rejectWithValue, signal }) => {
     try {
       if (signal.aborted) {
-        throw new DOMException('Aborted', 'AbortError');
+        throw new DOMException("Aborted", "AbortError");
       }
 
       const { data: userData } = await supabase.auth.getUser();
-      
+
       if (!userData.user) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
       }
 
-      const { data, error } = await supabase
-        .from('blogs')
-        .insert([{
-          title: blogData.title,
-          content: blogData.content,
-          user_id: userData.user.id
-        }])
+      const { data: blog, error } = await supabase
+        .from("blogs")
+        .insert([
+          {
+            title: blogData.title,
+            content: blogData.content,
+            user_id: userData.user.id,
+          },
+        ])
         .select()
         .single();
 
       if (error) throw error;
-      return data;
+
+      let imageUrl: string | undefined;
+      if (blogData.image) {
+        imageUrl = await uploadImage(blogData.image, userData.user.id, blog.id);
+
+        const { data: updatedBlog, error: updateError } = await supabase
+          .from("blogs")
+          .update({ image_url: imageUrl })
+          .eq("id", blog.id)
+          .select()
+          .single();
+
+        if (updateError) throw updateError;
+        return updatedBlog;
+      }
+
+      return blog;
     } catch (error: any) {
-      if (error.name === 'AbortError') {
+      if (error.name === "AbortError") {
         return rejectWithValue(null);
       }
-      return rejectWithValue(error.message || 'Failed to create blog');
+      return rejectWithValue(error.message || "Failed to create blog");
     }
   }
 );
 
 export const updateBlog = createAsyncThunk(
-  'blogs/updateBlog',
-  async ({ id, title, content }: UpdateBlogData, { rejectWithValue, signal }) => {
-    try {
-      if (signal.aborted) {
-        throw new DOMException('Aborted', 'AbortError');
-      }
+  "blogs/updateBlog",
+  async (
+    {
+      id,
+      title,
+      content,
+      image,
+      existingImageUrl,
+      removeImage = false,
+    }: UpdateBlogData & { removeImage?: boolean },
+    { rejectWithValue }
+  ) => {
+    console.log("🔄 updateBlog called:", {
+      id,
+      removeImage,
+      hasImage: !!image,
+      existingImageUrl,
+    });
 
+    try {
       const { data: userData } = await supabase.auth.getUser();
-      
-      if (!userData.user) {
-        throw new Error('User not authenticated');
+      if (!userData.user) throw new Error("User not authenticated");
+
+      const updateData: any = {
+        title,
+        content,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (removeImage && existingImageUrl) {
+        await deleteImageFromStorage(existingImageUrl);
+        updateData.image_url = null;
+      } else if (image === null && existingImageUrl) {
+        await deleteImageFromStorage(existingImageUrl);
+        updateData.image_url = null;
+      } else if (image instanceof File) {
+        if (existingImageUrl) {
+          await deleteImageFromStorage(existingImageUrl);
+        }
+        updateData.image_url = await uploadImage(image, userData.user.id, id);
       }
 
       const { data, error } = await supabase
-        .from('blogs')
-        .update({
-          title,
-          content,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .eq('user_id', userData.user.id)
+        .from("blogs")
+        .update(updateData)
+        .eq("id", id)
+        .eq("user_id", userData.user.id)
         .select()
         .single();
 
       if (error) throw error;
+      console.log("✅ updateBlog successful");
       return data;
     } catch (error: any) {
-      if (error.name === 'AbortError') {
-        return rejectWithValue(null);
-      }
-      return rejectWithValue(error.message || 'Failed to update blog');
+      console.error("❌ updateBlog error:", error);
+      return rejectWithValue(error.message || "Failed to update blog");
     }
   }
 );
 
 export const deleteBlog = createAsyncThunk(
-  'blogs/deleteBlog',
-  async (id: string, { rejectWithValue, signal }) => {
+  "blogs/deleteBlog",
+  async (id: string, { rejectWithValue, signal, getState }) => {
     try {
       if (signal.aborted) {
-        throw new DOMException('Aborted', 'AbortError');
+        throw new DOMException("Aborted", "AbortError");
       }
 
       const { data: userData } = await supabase.auth.getUser();
-      
+
       if (!userData.user) {
-        throw new Error('User not authenticated');
+        throw new Error("User not authenticated");
+      }
+
+      const state = getState() as { blogs: BlogState };
+      const blog =
+        state.blogs.blogs.find((b) => b.id === id) || state.blogs.currentBlog;
+
+      if (blog?.image_url) {
+        console.log("Deleting associated image for blog:", id);
+        await deleteImageFromStorage(blog.image_url);
       }
 
       const { error } = await supabase
-        .from('blogs')
+        .from("blogs")
         .delete()
-        .eq('id', id)
-        .eq('user_id', userData.user.id);
+        .eq("id", id)
+        .eq("user_id", userData.user.id);
 
       if (error) throw error;
       return id;
     } catch (error: any) {
-      if (error.name === 'AbortError') {
+      if (error.name === "AbortError") {
         return rejectWithValue(null);
       }
-      return rejectWithValue(error.message || 'Failed to delete blog');
+      return rejectWithValue(error.message || "Failed to delete blog");
     }
   }
 );
 
 export const fetchBlogById = createAsyncThunk(
-  'blogs/fetchBlogById',
+  "blogs/fetchBlogById",
   async (id: string, { rejectWithValue, signal }) => {
     try {
       if (signal.aborted) {
-        throw new DOMException('Aborted', 'AbortError');
+        throw new DOMException("Aborted", "AbortError");
       }
 
       const { data, error } = await supabase
-        .from('blogs')
-        .select('*')
-        .eq('id', id)
+        .from("blogs")
+        .select("*")
+        .eq("id", id)
         .single();
 
       if (error) throw error;
       return data;
     } catch (error: any) {
-      if (error.name === 'AbortError') {
+      if (error.name === "AbortError") {
         return rejectWithValue(null);
       }
-      return rejectWithValue(error.message || 'Failed to fetch blog');
+      return rejectWithValue(error.message || "Failed to fetch blog");
     }
   }
 );
 
 const blogSlice = createSlice({
-  name: 'blogs',
+  name: "blogs",
   initialState,
   reducers: {
     setCurrentBlog: (state, action: PayloadAction<Blog | null>) => {
@@ -265,7 +380,9 @@ const blogSlice = createSlice({
     builder.addCase(updateBlog.fulfilled, (state, action) => {
       if (action.payload) {
         state.loading = false;
-        const index = state.blogs.findIndex(blog => blog.id === action.payload?.id);
+        const index = state.blogs.findIndex(
+          (blog) => blog.id === action.payload?.id
+        );
         if (index !== -1) {
           state.blogs[index] = action.payload;
         }
@@ -288,7 +405,7 @@ const blogSlice = createSlice({
     builder.addCase(deleteBlog.fulfilled, (state, action) => {
       if (action.payload) {
         state.loading = false;
-        state.blogs = state.blogs.filter(blog => blog.id !== action.payload);
+        state.blogs = state.blogs.filter((blog) => blog.id !== action.payload);
         state.totalCount -= 1;
         state.totalPages = Math.ceil(state.totalCount / state.pageSize);
       }
@@ -323,12 +440,12 @@ const blogSlice = createSlice({
   },
 });
 
-export const { 
-  setCurrentBlog, 
-  clearCurrentBlog, 
-  setPage, 
+export const {
+  setCurrentBlog,
+  clearCurrentBlog,
+  setPage,
   clearError,
-  resetBlogState 
+  resetBlogState,
 } = blogSlice.actions;
 
 export default blogSlice.reducer;

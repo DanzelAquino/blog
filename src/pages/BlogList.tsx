@@ -4,8 +4,7 @@ import { useBlog } from '../hooks/useBlog';
 import { useAuth } from '../hooks/useAuth';
 import BlogCard from '../components/BlogCard';
 import FormErrorMessage from '../components/FormErrorMessage';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { Blog } from '../types';
+import { Blog } from '../types'; // Removed unused LoadingSpinner import
 
 const BlogList: React.FC = () => {
   const navigate = useNavigate();
@@ -13,16 +12,16 @@ const BlogList: React.FC = () => {
     blogs,
     loading,
     error,
-    page,
+    // Removed unused 'page' variable
     totalPages,
     getBlogs,
-    changePage,
+    // Removed unused 'changePage' function
     clearBlogError,
     removeBlog,
   } = useBlog();
   
   const { isAuthenticated, userId } = useAuth();
-  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
+  // Removed unused 'deleteLoading' state
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
@@ -34,14 +33,11 @@ const BlogList: React.FC = () => {
       return;
     }
 
-    setDeleteLoading(blogId);
     try {
       await removeBlog(blogId);
       getBlogs(currentPage);
     } catch (err) {
       console.error('Failed to delete blog:', err);
-    } finally {
-      setDeleteLoading(null);
     }
   };
 
@@ -175,7 +171,7 @@ const BlogList: React.FC = () => {
     return (
       <div style={styles.page}>
         <div style={styles.loadingContainer}>
-          <LoadingSpinner size="large" />
+          <div className="loading-spinner"></div>
         </div>
       </div>
     );
@@ -253,6 +249,7 @@ const BlogList: React.FC = () => {
                 showActions={userId === blog.user_id}
                 onEdit={() => handleEdit(blog.id)}
                 onDelete={() => handleDelete(blog.id, blog.title)}
+                deleteLoading={false} // Since we removed deleteLoading state
               />
             ))}
           </div>

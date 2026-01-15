@@ -1,11 +1,12 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { blogSchema, BlogFormData } from '../utils/validationSchema';
-import FormInput from './FormInput';
-import FormTextarea from './FormTextarea';
-import FormErrorMessage from './FormErrorMessage';
-import LoadingSpinner from './LoadingSpinner';
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { blogSchema, BlogFormData } from "../utils/validationSchema";
+import FormInput from "./FormInput";
+import FormTextarea from "./FormTextarea";
+import FormErrorMessage from "./FormErrorMessage";
+import LoadingSpinner from "./LoadingSpinner";
+import ImageUpload from "./ImageUpload";
 
 interface BlogFormProps {
   onSubmit: (data: BlogFormData) => Promise<void>;
@@ -22,66 +23,132 @@ const BlogForm: React.FC<BlogFormProps> = ({
   loading = false,
   error,
   onClearError,
-  submitText = 'Publish',
+  submitText = "Publish",
 }) => {
+  const [imageError, setImageError] = useState<string>("");
+  const [imageRemoved, setImageRemoved] = useState<boolean>(false);
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
+    setValue,
+    watch,
   } = useForm<BlogFormData>({
-    resolver: yupResolver(blogSchema),
-    mode: 'onBlur',
+    resolver: yupResolver(blogSchema) as any,
+    mode: "onBlur",
     defaultValues: {
-      title: initialData?.title || '',
-      content: initialData?.content || '',
+      title: initialData?.title || "",
+      content: initialData?.content || "",
+      existingImageUrl: initialData?.existingImageUrl || "",
+      removeImage: false,
     },
   });
 
+  // Watch for existingImageUrl changes
+  const existingImageUrl = watch("existingImageUrl");
+
+  const validateImage = (file: File | null): string => {
+    if (!file) return "";
+
+    if (file.size > 5 * 1024 * 1024) {
+      return "File size is too large (max 5MB)";
+    }
+
+    const validTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      return "Unsupported file format. Use JPG, PNG, GIF, or WEBP";
+    }
+
+    return "";
+  };
+
+  const handleImageChange = (file: File | null) => {
+    const error = validateImage(file);
+    setImageError(error);
+
+    // If user selects a new image, cancel the removeImage flag
+    if (file) {
+      setValue("removeImage", false);
+      setImageRemoved(false);
+      // Clear existingImageUrl when uploading new image
+      if (existingImageUrl) {
+        setValue("existingImageUrl", "");
+      }
+    }
+
+    if (error) {
+      setValue("image", undefined);
+    } else {
+      setValue("image", file || undefined);
+    }
+  };
+
+  const handleRemoveExisting = () => {
+    console.log("BlogForm: Setting removeImage to true");
+    setValue("removeImage", true);
+    setValue("image", undefined);
+    setImageRemoved(true);
+  };
+
   const handleFormSubmit = async (data: BlogFormData) => {
+    console.log("BlogForm onSubmit:", {
+      image: data.image,
+      existingImageUrl: data.existingImageUrl,
+      removeImage: data.removeImage,
+    });
+
+    if (imageError) {
+      return;
+    }
+
     try {
       await onSubmit(data);
-      reset();
+      reset({
+        title: "",
+        content: "",
+        image: undefined,
+        existingImageUrl: undefined,
+        removeImage: false,
+      });
+      setImageError("");
+      setImageRemoved(false);
     } catch (err) {
-      console.error('Form submission failed:', err);
+      console.error("Form submission failed:", err);
     }
   };
 
   const styles = {
     form: {
-      display: 'flex',
-      flexDirection: 'column' as 'column',
-      gap: '24px',
+      display: "flex",
+      flexDirection: "column" as "column",
+      gap: "24px",
     },
     formActions: {
-      display: 'flex',
-      justifyContent: 'flex-end',
-      gap: '16px',
+      display: "flex",
+      justifyContent: "flex-end",
+      gap: "16px",
     },
     tips: {
-      fontSize: '14px',
-      color: '#6b7280',
-      marginBottom: '16px',
+      fontSize: "14px",
+      color: "#6b7280",
+      marginBottom: "16px",
     },
     tipsList: {
-      marginLeft: '20px',
-      marginTop: '8px',
+      marginLeft: "20px",
+      marginTop: "8px",
     },
     submitButton: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
     },
   };
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)} style={styles.form}>
-      {error && (
-        <FormErrorMessage 
-          message={error} 
-          onDismiss={onClearError} 
-        />
-      )}
+      {error && <FormErrorMessage message={error} onDismiss={onClearError} />}
 
       <FormInput
         label="Title"
@@ -94,6 +161,13 @@ const BlogForm: React.FC<BlogFormProps> = ({
         disabled={loading}
       />
 
+      <ImageUpload
+        onImageChange={handleImageChange}
+        onRemoveExisting={handleRemoveExisting}
+        existingImageUrl={imageRemoved ? undefined : initialData?.existingImageUrl}
+        error={imageError}
+      />
+
       <FormTextarea
         label="Content"
         name="content"
@@ -104,6 +178,10 @@ const BlogForm: React.FC<BlogFormProps> = ({
         required
         disabled={loading}
       />
+
+      {/* Add hidden inputs for form data */}
+      <input type="hidden" {...register("removeImage")} />
+      <input type="hidden" {...register("existingImageUrl")} />
 
       <div style={styles.tips}>
         <p>Tips for great content:</p>
@@ -126,7 +204,7 @@ const BlogForm: React.FC<BlogFormProps> = ({
         </button>
         <button
           type="submit"
-          disabled={isSubmitting || loading}
+          disabled={isSubmitting || loading || !!imageError}
           className="btn btn-primary"
           style={styles.submitButton}
         >
