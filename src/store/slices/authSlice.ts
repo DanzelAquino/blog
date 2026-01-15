@@ -26,7 +26,6 @@ const convertToAuthUser = (supabaseUser: SupabaseUser | null): AuthUser | null =
   };
 };
 
-// Async thunks
 export const signUp = createAsyncThunk(
   'auth/signUp',
   async (credentials: SignUpCredentials): Promise<AuthUser | null> => {
