@@ -91,7 +91,6 @@ const Home: React.FC = () => {
 
   return (
     <div style={styles.page}>
-      {/* Hero Section */}
       <section style={styles.hero}>
         <h1 style={styles.heroTitle}>Welcome to Blogs</h1>
         
