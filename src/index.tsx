@@ -17,7 +17,8 @@ document.head.appendChild(style);
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Root element not found');
 
-ReactDOM.createRoot(rootElement).render(
+const root = ReactDOM.createRoot(rootElement);
+root.render(
   <Provider store={store}>
     <App />
   </Provider>
