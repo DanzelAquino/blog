@@ -755,14 +755,14 @@ select:focus {
     flex-wrap: wrap;
     gap: 6px;
   }
-  
+
   .page-button {
     padding: 6px 12px;
     font-size: 13px;
     min-width: 36px;
     height: 32px;
   }
-  
+
   .pagination-controls .page-button:not(:first-child):not(:last-child) {
     min-width: 32px;
     padding: 6px 10px;
@@ -1000,9 +1000,11 @@ select:focus {
   0% {
     opacity: 0.7;
   }
+
   50% {
     opacity: 1;
   }
+
   100% {
     opacity: 0.7;
   }
@@ -1021,4 +1023,109 @@ select:focus {
   background-color: #b91c1c !important;
   border: 2px solid #dc2626 !important;
   box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}
+
+.blog-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.blog-card-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.blog-card-updated {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-left: 4px;
+}
+
+.blog-card-comment-count {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+  transition: color 0.2s;
+}
+
+.blog-card:hover .blog-card-comment-count {
+  color: #2563eb;
+}
+
+.comment-icon {
+  flex-shrink: 0;
+}
+
+.comment-count-number {
+  font-weight: 600;
+  color: #374151;
+}
+
+.comment-count-label {
+  font-size: 13px;
+}
+
+.blog-card-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.blog-card-comment-count-sm {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #6b7280;
+  padding: 4px 8px;
+  background-color: #f3f4f6;
+  border-radius: 12px;
+}
+
+.blog-card-comment-count-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 12px;
+  padding: 4px 8px;
+  background-color: #f3f4f6;
+  border-radius: 6px;
+  align-self: flex-start;
+}
+
+.comment-icon-sm {
+  flex-shrink: 0;
+}
+
+.blog-card-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.blog-card-owner-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.owner-link {
+  color: #2563eb;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.owner-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
 }

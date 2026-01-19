@@ -5,6 +5,7 @@ interface ImageUploadProps {
   onRemoveExisting?: () => void;
   existingImageUrl?: string;
   error?: string;
+  optional?: boolean;
 }
 
 const ImageUpload: React.FC<ImageUploadProps> = ({
@@ -12,9 +13,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   onRemoveExisting,
   existingImageUrl,
   error,
+  optional = false,
 }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(
-    existingImageUrl || null
+    existingImageUrl || null,
   );
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -180,7 +182,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
 
   return (
     <div style={styles.container}>
-      <label style={styles.label}>Blog Image (Optional)</label>
+      <label style={styles.label}>
+        {optional ? "Image (Optional)" : "Image"}
+      </label>
 
       <div
         style={styles.uploadArea}
@@ -204,7 +208,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   onMouseLeave={() => setIsRemoveHovered(false)}
                   style={{
                     ...styles.removeButton,
-                    ...(isRemoveHovered ? styles.removeButtonHover : {})
+                    ...(isRemoveHovered ? styles.removeButtonHover : {}),
                   }}
                 >
                   Remove Image
@@ -220,7 +224,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                   onMouseLeave={() => setIsChangeHovered(false)}
                   style={{
                     ...styles.changeButton,
-                    ...(isChangeHovered ? styles.changeButtonHover : {})
+                    ...(isChangeHovered ? styles.changeButtonHover : {}),
                   }}
                 >
                   Change Image
@@ -244,7 +248,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                 onMouseLeave={() => setIsUploadHovered(false)}
                 style={{
                   ...styles.uploadButton,
-                  ...(isUploadHovered ? styles.uploadButtonHover : {})
+                  ...(isUploadHovered ? styles.uploadButtonHover : {}),
                 }}
                 onClick={(e) => {
                   e.stopPropagation();

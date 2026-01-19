@@ -1,6 +1,13 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { supabase } from "../../utils/supabase";
-import { Blog, CreateBlogData, UpdateBlogData } from "../../types";
+import {
+  Blog,
+  CreateBlogData,
+  UpdateBlogData,
+  Comment,
+  CreateCommentData,
+  UpdateCommentData,
+} from "../../types";
 
 interface BlogState {
   blogs: Blog[];
@@ -11,6 +18,9 @@ interface BlogState {
   page: number;
   pageSize: number;
   totalPages: number;
+  comments: Comment[];
+  commentsLoading: boolean;
+  commentsError: string | null;
 }
 
 const initialState: BlogState = {
@@ -22,6 +32,9 @@ const initialState: BlogState = {
   page: 1,
   pageSize: 9,
   totalPages: 0,
+  comments: [],
+  commentsLoading: false,
+  commentsError: null,
 };
 
 export const fetchBlogs = createAsyncThunk(
@@ -36,16 +49,48 @@ export const fetchBlogs = createAsyncThunk(
         throw new DOMException("Aborted", "AbortError");
       }
 
-      const { data, error, count } = await supabase
+      const {
+        data: blogs,
+        error: blogsError,
+        count,
+      } = await supabase
         .from("blogs")
         .select("*", { count: "exact" })
         .order("created_at", { ascending: false })
         .range(from, to);
 
-      if (error) throw error;
+      if (blogsError) throw blogsError;
+
+      const blogIds = blogs?.map((blog) => blog.id) || [];
+
+      let commentCounts: Record<string, number> = {};
+
+      if (blogIds.length > 0) {
+        const { data: commentsData, error: commentsError } = await supabase
+          .from("comments")
+          .select("blog_id")
+          .in("blog_id", blogIds);
+
+        if (commentsError) throw commentsError;
+
+        commentCounts =
+          commentsData?.reduce(
+            (acc, comment) => {
+              acc[comment.blog_id] = (acc[comment.blog_id] || 0) + 1;
+              return acc;
+            },
+            {} as Record<string, number>,
+          ) || {};
+      }
+
+      const blogsWithCommentCount =
+        blogs?.map((blog) => ({
+          ...blog,
+          comment_count: commentCounts[blog.id] || 0,
+        })) || [];
 
       return {
-        blogs: data || [],
+        blogs: blogsWithCommentCount,
         totalCount: count || 0,
         page,
         pageSize,
@@ -57,13 +102,13 @@ export const fetchBlogs = createAsyncThunk(
       }
       return rejectWithValue(error.message || "Failed to fetch blogs");
     }
-  }
+  },
 );
 
 const uploadImage = async (
   file: File,
   userId: string,
-  blogId: string
+  blogId: string,
 ): Promise<string> => {
   const fileExt = file.name.split(".").pop();
   const fileName = `${userId}/${blogId}-${Date.now()}.${fileExt}`;
@@ -86,7 +131,7 @@ const extractFilePathFromUrl = (imageUrl: string): string | null => {
     const blogImagesIndex = imageUrl.indexOf("blog-images/");
     if (blogImagesIndex !== -1) {
       const result = imageUrl.substring(
-        blogImagesIndex + "blog-images/".length
+        blogImagesIndex + "blog-images/".length,
       );
       return result;
     }
@@ -174,7 +219,7 @@ export const createBlog = createAsyncThunk(
       }
       return rejectWithValue(error.message || "Failed to create blog");
     }
-  }
+  },
 );
 
 export const updateBlog = createAsyncThunk(
@@ -188,7 +233,7 @@ export const updateBlog = createAsyncThunk(
       existingImageUrl,
       removeImage = false,
     }: UpdateBlogData & { removeImage?: boolean },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     console.log("🔄 updateBlog called:", {
       id,
@@ -235,7 +280,7 @@ export const updateBlog = createAsyncThunk(
       console.error("❌ updateBlog error:", error);
       return rejectWithValue(error.message || "Failed to update blog");
     }
-  }
+  },
 );
 
 export const deleteBlog = createAsyncThunk(
@@ -275,7 +320,7 @@ export const deleteBlog = createAsyncThunk(
       }
       return rejectWithValue(error.message || "Failed to delete blog");
     }
-  }
+  },
 );
 
 export const fetchBlogById = createAsyncThunk(
@@ -300,8 +345,238 @@ export const fetchBlogById = createAsyncThunk(
       }
       return rejectWithValue(error.message || "Failed to fetch blog");
     }
-  }
+  },
 );
+
+export const fetchComments = createAsyncThunk(
+  "blogs/fetchComments",
+  async (blogId: string, { rejectWithValue, signal }) => {
+    try {
+      if (signal.aborted) {
+        throw new DOMException("Aborted", "AbortError");
+      }
+
+      const { data: currentUser } = await supabase.auth.getUser();
+      const currentUserId = currentUser.user?.id;
+
+      const { data: comments, error: commentsError } = await supabase
+        .from("comments")
+        .select("*")
+        .eq("blog_id", blogId)
+        .order("created_at", { ascending: false });
+
+      if (commentsError) throw commentsError;
+
+      const commentsWithOwnerFlag = comments.map((comment) => ({
+        ...comment,
+        isOwner: comment.user_id === currentUserId,
+      }));
+
+      return commentsWithOwnerFlag;
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        return rejectWithValue(null);
+      }
+      return rejectWithValue(error.message || "Failed to fetch comments");
+    }
+  },
+);
+
+export const createComment = createAsyncThunk(
+  "blogs/createComment",
+  async (commentData: CreateCommentData, { rejectWithValue, signal }) => {
+    try {
+      if (signal.aborted) {
+        throw new DOMException("Aborted", "AbortError");
+      }
+
+      const { data: userData } = await supabase.auth.getUser();
+
+      if (!userData.user) {
+        throw new Error("User not authenticated");
+      }
+
+      let imageUrl: string | undefined;
+      if (commentData.image) {
+        const fileExt = commentData.image.name.split(".").pop();
+        const fileName = `comments/${userData.user.id}/${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("blog-images")
+          .upload(fileName, commentData.image);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from("blog-images")
+          .getPublicUrl(fileName);
+        imageUrl = data.publicUrl;
+      }
+
+      const { data: comment, error } = await supabase
+        .from("comments")
+        .insert([
+          {
+            blog_id: commentData.blog_id,
+            user_id: userData.user.id,
+            user_email: userData.user.email,
+            content: commentData.content,
+            image_url: imageUrl,
+          },
+        ])
+        .select("*")
+        .single();
+
+      if (error) throw error;
+
+      return {
+        ...comment,
+        isOwner: true,
+      };
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        return rejectWithValue(null);
+      }
+      return rejectWithValue(error.message || "Failed to create comment");
+    }
+  },
+);
+
+export const deleteComment = createAsyncThunk(
+  "blogs/deleteComment",
+  async (commentId: string, { rejectWithValue, signal, getState }) => {
+    try {
+      if (signal.aborted) {
+        throw new DOMException("Aborted", "AbortError");
+      }
+
+      const { data: userData } = await supabase.auth.getUser();
+
+      if (!userData.user) {
+        throw new Error("User not authenticated");
+      }
+
+      const state = getState() as { blogs: BlogState };
+      const comment = state.blogs.comments.find((c) => c.id === commentId);
+
+      if (comment?.image_url) {
+        const blogImagesIndex = comment.image_url.indexOf("blog-images/");
+        if (blogImagesIndex !== -1) {
+          const filePath = comment.image_url.substring(
+            blogImagesIndex + "blog-images/".length,
+          );
+          await supabase.storage.from("blog-images").remove([filePath]);
+        }
+      }
+
+      const { error } = await supabase
+        .from("comments")
+        .delete()
+        .eq("id", commentId)
+        .eq("user_id", userData.user.id);
+
+      if (error) throw error;
+      return commentId;
+    } catch (error: any) {
+      if (error.name === "AbortError") {
+        return rejectWithValue(null);
+      }
+      return rejectWithValue(error.message || "Failed to delete comment");
+    }
+  },
+);
+
+export const updateComment = createAsyncThunk(
+  "blogs/updateComment",
+  async (
+    {
+      id,
+      content,
+      image,
+      existingImageUrl,
+      removeImage = false,
+    }: UpdateCommentData & { existingImageUrl?: string; removeImage?: boolean },
+    { rejectWithValue },
+  ) => {
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error("User not authenticated");
+
+      const updateData: any = {
+        content,
+        updated_at: new Date().toISOString(),
+      };
+
+      if (removeImage && existingImageUrl) {
+        console.log("Removing comment image (removeImage flag)");
+        const blogImagesIndex = existingImageUrl.indexOf("blog-images/");
+        if (blogImagesIndex !== -1) {
+          const filePath = existingImageUrl.substring(
+            blogImagesIndex + "blog-images/".length,
+          );
+          await supabase.storage.from("blog-images").remove([filePath]);
+        }
+        updateData.image_url = null;
+      } else if (image instanceof File) {
+        console.log("Uploading new comment image");
+        if (existingImageUrl) {
+          const blogImagesIndex = existingImageUrl.indexOf("blog-images/");
+          if (blogImagesIndex !== -1) {
+            const filePath = existingImageUrl.substring(
+              blogImagesIndex + "blog-images/".length,
+            );
+            await supabase.storage.from("blog-images").remove([filePath]);
+          }
+        }
+        updateData.image_url = await uploadCommentImage(
+          image,
+          userData.user.id,
+          id,
+        );
+      }
+
+      console.log("Updating comment with:", updateData);
+
+      const { data, error } = await supabase
+        .from("comments")
+        .update(updateData)
+        .eq("id", id)
+        .eq("user_id", userData.user.id)
+        .select("*")
+        .single();
+
+      if (error) throw error;
+
+      return {
+        ...data,
+        user_email: userData.user.email || "Unknown User",
+        isOwner: true,
+      };
+    } catch (error: any) {
+      console.error("updateComment error:", error);
+      return rejectWithValue(error.message || "Failed to update comment");
+    }
+  },
+);
+
+const uploadCommentImage = async (
+  file: File,
+  userId: string,
+  commentId: string,
+): Promise<string> => {
+  const fileExt = file.name.split(".").pop();
+  const fileName = `comments/${userId}/${commentId}-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("blog-images")
+    .upload(fileName, file);
+
+  if (uploadError) throw uploadError;
+
+  const { data } = supabase.storage.from("blog-images").getPublicUrl(fileName);
+
+  return data.publicUrl;
+};
 
 const blogSlice = createSlice({
   name: "blogs",
@@ -327,6 +602,16 @@ const blogSlice = createSlice({
       state.totalCount = 0;
       state.page = 1;
       state.totalPages = 0;
+    },
+    setComments: (state, action: PayloadAction<Comment[]>) => {
+      state.comments = action.payload;
+    },
+    clearComments: (state) => {
+      state.comments = [];
+      state.commentsError = null;
+    },
+    clearCommentsError: (state) => {
+      state.commentsError = null;
     },
   },
   extraReducers: (builder) => {
@@ -381,7 +666,7 @@ const blogSlice = createSlice({
       if (action.payload) {
         state.loading = false;
         const index = state.blogs.findIndex(
-          (blog) => blog.id === action.payload?.id
+          (blog) => blog.id === action.payload?.id,
         );
         if (index !== -1) {
           state.blogs[index] = action.payload;
@@ -437,6 +722,63 @@ const blogSlice = createSlice({
         state.loading = false;
       }
     });
+    builder.addCase(fetchComments.pending, (state) => {
+      state.commentsLoading = true;
+      state.commentsError = null;
+    });
+    builder.addCase(fetchComments.fulfilled, (state, action) => {
+      state.commentsLoading = false;
+      state.comments = action.payload;
+    });
+    builder.addCase(fetchComments.rejected, (state, action) => {
+      state.commentsLoading = false;
+      state.commentsError = action.payload as string;
+    });
+
+    builder.addCase(createComment.pending, (state) => {
+      state.commentsLoading = true;
+      state.commentsError = null;
+    });
+    builder.addCase(createComment.fulfilled, (state, action) => {
+      state.commentsLoading = false;
+      state.comments.unshift(action.payload);
+    });
+    builder.addCase(createComment.rejected, (state, action) => {
+      state.commentsLoading = false;
+      state.commentsError = action.payload as string;
+    });
+
+    builder.addCase(deleteComment.pending, (state) => {
+      state.commentsLoading = true;
+      state.commentsError = null;
+    });
+    builder.addCase(deleteComment.fulfilled, (state, action) => {
+      state.commentsLoading = false;
+      state.comments = state.comments.filter(
+        (comment) => comment.id !== action.payload,
+      );
+    });
+    builder.addCase(deleteComment.rejected, (state, action) => {
+      state.commentsLoading = false;
+      state.commentsError = action.payload as string;
+    });
+    builder.addCase(updateComment.pending, (state) => {
+      state.commentsLoading = true;
+      state.commentsError = null;
+    });
+    builder.addCase(updateComment.fulfilled, (state, action) => {
+      state.commentsLoading = false;
+      const index = state.comments.findIndex(
+        (comment) => comment.id === action.payload?.id,
+      );
+      if (index !== -1) {
+        state.comments[index] = action.payload;
+      }
+    });
+    builder.addCase(updateComment.rejected, (state, action) => {
+      state.commentsLoading = false;
+      state.commentsError = action.payload as string;
+    });
   },
 });
 
@@ -446,6 +788,9 @@ export const {
   setPage,
   clearError,
   resetBlogState,
+  setComments,
+  clearComments,
+  clearCommentsError,
 } = blogSlice.actions;
 
 export default blogSlice.reducer;

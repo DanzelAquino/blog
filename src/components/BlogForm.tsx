@@ -36,7 +36,7 @@ const BlogForm: React.FC<BlogFormProps> = ({
     setValue,
     watch,
   } = useForm<BlogFormData>({
-    resolver: yupResolver(blogSchema) as any,
+    resolver: yupResolver(blogSchema),
     mode: "onBlur",
     defaultValues: {
       title: initialData?.title || "",

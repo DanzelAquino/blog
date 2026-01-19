@@ -1,8 +1,8 @@
-import React from 'react';
-import { format } from 'date-fns';
-import { Link } from 'react-router-dom';
-import { Blog } from '../types';
-import { useAuth } from '../hooks/useAuth';
+import React from "react";
+import { format } from "date-fns";
+import { Link } from "react-router-dom";
+import { Blog } from "../types";
+import { useAuth } from "../hooks/useAuth";
 
 interface BlogCardProps {
   blog: Blog;
@@ -12,54 +12,78 @@ interface BlogCardProps {
   deleteLoading?: boolean;
 }
 
-const BlogCard: React.FC<BlogCardProps> = ({ 
-  blog, 
+const BlogCard: React.FC<BlogCardProps> = ({
+  blog,
   showActions = false,
   onEdit,
   onDelete,
-  deleteLoading = false
+  deleteLoading = false,
 }) => {
   const { userId } = useAuth();
   const isOwner = userId === blog.user_id;
 
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'MMM dd, yyyy');
+      return format(new Date(dateString), "MMM dd, yyyy");
     } catch (error) {
-      return 'Invalid date';
+      return "Invalid date";
     }
   };
 
   const truncateContent = (content: string, maxLength: number = 150) => {
     if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength).trim() + '...';
+    return content.substring(0, maxLength).trim() + "...";
   };
 
   return (
     <article className="blog-card">
       {blog.image_url && (
         <div className="blog-card-image">
-          <img 
-            src={blog.image_url} 
+          <img
+            src={blog.image_url}
             alt={blog.title}
             className="blog-image"
             loading="lazy"
           />
         </div>
       )}
-      
+
       <div className="blog-card-content-wrapper">
         <div className="blog-card-header">
           <div className="blog-card-header-content">
             <h3 className="blog-card-title">{blog.title}</h3>
-            <div className="blog-card-date">
-              {formatDate(blog.created_at)}
-              {blog.updated_at !== blog.created_at && (
-                <span className="blog-card-updated">(Updated)</span>
-              )}
+            <div className="blog-card-meta">
+              <div className="blog-card-date">
+                {formatDate(blog.created_at)}
+                {blog.updated_at !== blog.created_at && (
+                  <span className="blog-card-updated">(Updated)</span>
+                )}
+              </div>
+
+              <div className="blog-card-comment-count">
+                <svg
+                  className="comment-icon"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                <span className="comment-count-number">
+                  {blog.comment_count || 0}
+                </span>
+                <span className="comment-count-label">
+                  {blog.comment_count === 1 ? " comment" : " comments"}
+                </span>
+              </div>
             </div>
           </div>
-          
+
           {isOwner && showActions && (
             <div className="blog-card-actions">
               {onEdit && (
@@ -82,54 +106,100 @@ const BlogCard: React.FC<BlogCardProps> = ({
                   {deleteLoading ? (
                     <span className="deleting-text">Deleting...</span>
                   ) : (
-                    'Delete'
+                    "Delete"
                   )}
                 </button>
               )}
             </div>
           )}
         </div>
-        
+
         <div className="blog-card-content">
           <p>{truncateContent(blog.content)}</p>
         </div>
-        
+
         <div className="blog-card-footer">
-          <Link 
-            to={`/blogs/${blog.id}`} 
+          <Link
+            to={`/blogs/${blog.id}`}
             className="blog-card-read-more"
             aria-label={`Read full article: ${blog.title}`}
           >
             Read full article
-            <svg 
+            <svg
               className="read-more-icon"
-              width="16" 
-              height="16" 
-              fill="none" 
-              stroke="currentColor" 
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
               aria-hidden="true"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M14 5l7 7m0 0l-7 7m7-7H3"
+              />
             </svg>
           </Link>
-          
+
           {isOwner && !showActions && (
-            <div className="blog-card-owner-actions">
-              <Link 
-                to={`/edit/${blog.id}`} 
-                className="owner-link"
-                aria-label={`Edit ${blog.title}`}
+            <div className="blog-card-bottom-row">
+              <div className="blog-card-owner-actions">
+                <Link
+                  to={`/edit/${blog.id}`}
+                  className="owner-link"
+                  aria-label={`Edit ${blog.title}`}
+                >
+                  Edit
+                </Link>
+                <Link
+                  to={`/blogs/${blog.id}`}
+                  className="owner-link"
+                  aria-label={`View ${blog.title}`}
+                >
+                  View
+                </Link>
+              </div>
+
+              <div className="blog-card-comment-count-sm">
+                <svg
+                  className="comment-icon-sm"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+                <span>{blog.comment_count || 0}</span>
+              </div>
+            </div>
+          )}
+
+          {!isOwner && !showActions && (blog.comment_count || 0) > 0 && (
+            <div className="blog-card-comment-count-footer">
+              <svg
+                className="comment-icon-sm"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
               >
-                Edit
-              </Link>
-              <Link 
-                to={`/blogs/${blog.id}`} 
-                className="owner-link"
-                aria-label={`View ${blog.title}`}
-              >
-                View
-              </Link>
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              <span>
+                {blog.comment_count || 0}{" "}
+                {(blog.comment_count || 0) === 1 ? "comment" : "comments"}
+              </span>
             </div>
           )}
         </div>

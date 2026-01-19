@@ -28,6 +28,7 @@ export interface Blog {
   created_at: string;
   updated_at: string;
   image_url?: string;
+  comment_count?: number;
 }
 
 export interface BlogState {
@@ -38,6 +39,10 @@ export interface BlogState {
   totalCount: number;
   page: number;
   pageSize: number;
+  totalPages: number;
+  comments: Comment[];
+  commentsLoading: boolean;
+  commentsError: string | null;
 }
 
 export interface CreateBlogData {
@@ -91,4 +96,34 @@ export interface BlogFormData {
 
 export interface ValidationErrors {
   [key: string]: string;
+}
+
+export interface Comment {
+  id: string;
+  blog_id: string;
+  user_id: string;
+  content: string;
+  image_url?: string;
+  created_at: string;
+  updated_at: string;
+  user_email?: string;
+}
+
+export interface CreateCommentData {
+  blog_id: string;
+  content: string;
+  image?: File;
+}
+
+export interface CommentFormData {
+  content: string;
+  image?: File;
+}
+
+export interface UpdateCommentData {
+  id: string;
+  content: string;
+  image?: File | null;
+  existingImageUrl?: string;
+  removeImage?: boolean;
 }
