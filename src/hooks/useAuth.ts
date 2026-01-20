@@ -75,5 +75,6 @@ export const useAuth = () => {
     isAuthenticated: !!user,
     userId: user?.id,
     userEmail: user?.email,
+    navigate,
   };
 };
