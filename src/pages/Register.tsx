@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useAppDispatch, useAppSelector } from '../store';
 import { signUp, clearError } from '../store/slices/authSlice';
-import { registerSchema, RegisterFormData } from '../utils/validationSchema';
+import { registerSchema } from '../utils/validationSchema';
 import FormInput from '../components/FormInput';
 import FormErrorMessage from '../components/FormErrorMessage';
 
