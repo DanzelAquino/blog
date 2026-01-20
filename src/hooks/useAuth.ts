@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../store';
 import { supabase } from '../utils/supabase';
 import { setUser } from '../store/slices/authSlice';
@@ -7,7 +6,6 @@ import { AuthUser } from '../types';
 
 export const useAuth = () => {
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
   const { user, loading, error } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
@@ -46,7 +44,7 @@ export const useAuth = () => {
     let isMounted = true;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (_event, session) => {
         if (!isMounted) return;
         
         if (session?.user) {
@@ -75,6 +73,5 @@ export const useAuth = () => {
     isAuthenticated: !!user,
     userId: user?.id,
     userEmail: user?.email,
-    navigate,
   };
 };
